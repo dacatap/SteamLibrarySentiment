@@ -2,9 +2,6 @@ import requests
 from datetime import datetime, timezone
 from typing import Any
 
-#TODO
-#Refactor storage keys for better allocation and clarity, should look more like "raw/Steam/..."
-
 #GET game library dictionary
 def getSteamLibrary(steam_api_key: str, steam_id: str) -> list[int]:
     url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -30,14 +27,14 @@ def getSteamLibrary(steam_api_key: str, steam_id: str) -> list[int]:
 #GET review history (last 2 weeks) 
 def getGameSteamReviewHistory(steam_game_id:int) -> tuple[str, dict[str, Any]]:
     url = f"https://store.steampowered.com/appreviewhistogram/{steam_game_id}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     response.raise_for_status()
 
     # Raw payload ready to land directly into S3
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    storage_key = f"raw/game_id={steam_game_id}/{fetch_date}.json"
+    storage_key = f"raw/Steam/reviews/game_id={steam_game_id}/{fetch_date}.json"
 
     return storage_key, raw_payload
 
@@ -59,6 +56,6 @@ def getGameSteamNews(steam_game_id: int, count: int = 20) -> tuple[str, dict[str
     #Same as previous function, raw payload to be stored into S3
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    storage_key = f"raw/game_id={steam_game_id}/{fetch_date}news.json"
+    storage_key = f"raw/Steam/news/game_id={steam_game_id}/{fetch_date}.json"
 
     return storage_key, raw_payload
