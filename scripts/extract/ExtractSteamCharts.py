@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timezone
 import json
 
-def GetSteamChartsHistory(steam_game_id : int) -> tuple[str, dict]:
+def getSteamChartsHistory(steam_game_id : int) -> tuple[str, dict]:
     url = f"https://steamcharts.com/app/{steam_game_id}/chart-data.json"
 
     response = requests.get(url, timeout=10)

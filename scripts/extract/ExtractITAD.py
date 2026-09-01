@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timezone
 import json
 
-def POSTITADGamesGetInfo(game_id_list: list, ITAD_api_key: str) -> dict:
+def postITADGamesGetInfo(game_id_list: list, ITAD_api_key: str) -> dict:
     url = f"https://api.isthereanydeal.com/lookup/id/shop/61/v1"
 
     params = {
@@ -24,7 +24,7 @@ def POSTITADGamesGetInfo(game_id_list: list, ITAD_api_key: str) -> dict:
 
     return SteamID_ITADID
 
-def GETITADGameInfo(steam_app_id: str, game_ITAD_id: str, ITAD_api_key: str) -> tuple[str, dict]:
+def getITADGameInfo(steam_app_id: str, game_ITAD_id: str, ITAD_api_key: str) -> tuple[str, dict]:
     url = "https://api.isthereanydeal.com/games/info/v2"
     params = {
         "id": game_ITAD_id,
@@ -47,7 +47,7 @@ def GETITADGameInfo(steam_app_id: str, game_ITAD_id: str, ITAD_api_key: str) -> 
 
     return storage_key, raw_data
 
-def GETITADGameHistory(steam_app_id: str, game_ITAD_id: str, release_date: str, ITAD_api_key: str) -> tuple[str, dict]:
+def getITADGameHistory(steam_app_id: str, game_ITAD_id: str, release_date: str, ITAD_api_key: str) -> tuple[str, dict]:
     url = "https://api.isthereanydeal.com/games/history/v2"
     
     params = {

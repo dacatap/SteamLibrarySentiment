@@ -39,7 +39,7 @@ def getGameSteamReviewHistory(steam_game_id:int) -> tuple[str, dict[str, Any]]:
     return storage_key, raw_payload
 
 #GET Steam Newsletter entries, only ones by the dev/publisher
-def getGameSteamNews(steam_game_id: int, count: int = 20) -> tuple[str, dict[str, Any]]:
+def getGameSteamNews(steam_game_id: int, count: int) -> tuple[str, dict[str, Any]]:
     url = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/"
 
     params = {
