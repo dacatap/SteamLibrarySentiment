@@ -11,6 +11,6 @@ def getSteamChartsHistory(steam_game_id : int) -> tuple[str, dict]:
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    storage_key = f"raw/SteamCharts/playercounts/game_id={steam_game_id}/{fetch_date}.json"
+    storage_key = f"raw/SteamCharts/playercounts/steam_game_id={steam_game_id}/{fetch_date}.parquet"
 
     return storage_key, raw_payload

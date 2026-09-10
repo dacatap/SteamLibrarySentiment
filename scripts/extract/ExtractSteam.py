@@ -34,7 +34,7 @@ def getGameSteamReviewHistory(steam_game_id:int) -> tuple[str, dict[str, Any]]:
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-    storage_key = f"raw/Steam/reviews/game_id={steam_game_id}/{fetch_date}.json"
+    storage_key = f"raw/Steam/reviews/steam_game_id={steam_game_id}/{fetch_date}.parquet"
 
     return storage_key, raw_payload
 
@@ -56,6 +56,6 @@ def getGameSteamNews(steam_game_id: int, count: int) -> tuple[str, dict[str, Any
     #Same as previous function, raw payload to be stored into S3
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    storage_key = f"raw/Steam/news/game_id={steam_game_id}/{fetch_date}.json"
+    storage_key = f"raw/Steam/news/steam_game_id={steam_game_id}/{fetch_date}.parquet"
 
     return storage_key, raw_payload

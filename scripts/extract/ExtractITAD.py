@@ -37,13 +37,17 @@ def getITADGameInfo(steam_app_id: str, game_ITAD_id: str, ITAD_api_key: str) -> 
     data = response.json()
 
     raw_data = {
-        "steam_appid": steam_app_id,
+        "itad_id": data.get("id"),
+        "steam_app_id": steam_app_id,
         "title": data.get("title"),
-        "releaseDate": data.get("releaseDate")
+        "releaseDate": data.get("releaseDate"),
+        "earlyAccess": data.get("earlyAccess"),
+        "tags": data.get("tags"),
+        "developers": data.get("developers"),
+        "publishers": data.get("publishers"),
     }
 
-    fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    storage_key = f"raw/ITAD/gameinfo/game_id={steam_app_id}/{fetch_date}.json"
+    storage_key = f"raw/ITAD/gameinfo/steam_game_id={steam_app_id}.parquet"
 
     return storage_key, raw_data
 
@@ -62,6 +66,6 @@ def getITADGameHistory(steam_app_id: str, game_ITAD_id: str, release_date: str, 
 
     raw_payload = response.json()
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    storage_key = f"raw/ITAD/gamehistoricalsales/game_id={steam_app_id}/{fetch_date}.json"
+    storage_key = f"raw/ITAD/gamehistoricalsales/steam_game_id={steam_app_id}/{fetch_date}.parquet"
 
-    return storage_key, raw_payload 
+    return storage_key, raw_payload
