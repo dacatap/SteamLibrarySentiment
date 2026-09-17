@@ -1,0 +1,23 @@
+#Bucket name is not a secret. Credentials are managed via env vars in profiles.yml
+version: 2
+
+sources:
+  - name: raw
+    meta:
+      external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw"
+    tables:
+      - name: steam_reviews
+        meta:
+          external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw/Steam/reviews/*/*.parquet"
+      - name: steam_news
+        meta:
+          external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw/Steam/news/*/*.parquet"
+      - name: steamcharts_players
+        meta:
+          external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw/SteamCharts/playercounts/*/*.parquet"
+      - name: itad_gameinfo
+        meta:
+          external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw/ITAD/gameinfo/*.parquet"
+      - name: itad_pricehistory
+        meta:
+          external_location: "s3://amzn-s3-steam-itad-charts-data-209186716412-sa-east-1-an/raw/ITAD/pricehistory/*/*.parquet"

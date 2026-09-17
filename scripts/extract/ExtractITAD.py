@@ -64,8 +64,18 @@ def getITADGameHistory(steam_app_id: str, game_ITAD_id: str, release_date: str, 
     response = requests.get(url, params=params, timeout=10)
     response.raise_for_status()
 
-    raw_payload = response.json()
+    raw = response.json()
+    raw_payload = [
+        {
+            "timestamp": entry["timestamp"],
+            "price_amount": entry["deal"]["price"]["amount"],
+            "regular_price": entry["deal"]["regular"]["amount"],
+            "discount_pct": entry["deal"]["cut"]
+        }
+        for entry in raw
+    ]
+
     fetch_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    storage_key = f"raw/ITAD/gamehistoricalsales/steam_game_id={steam_app_id}/{fetch_date}.parquet"
+    storage_key = f"raw/ITAD/pricehistory/steam_game_id={steam_app_id}/{fetch_date}.parquet"
 
     return storage_key, raw_payload

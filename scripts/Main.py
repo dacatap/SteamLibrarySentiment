@@ -1,8 +1,10 @@
+import io
 import os
 import time
 import json
 import boto3
 import datetime
+import pandas as pd
 from extract.ExtractSteam import getGameSteamNews, getGameSteamReviewHistory, getSteamLibrary
 from extract.ExtractITAD import postITADGamesGetInfo, getITADGameInfo, getITADGameHistory
 from extract.ExtractSteamCharts import getSteamChartsHistory
@@ -20,21 +22,15 @@ def getGamesInfoBucket(steam_game_id_list: list, s3_client, bucket_name: str) ->
         #Note: Although this works, in case that in the future ITAD adds more fields to the response of "/games/info/v2", the better alternative would be to have the prefix be:
         #prefix = f"raw/ITAD/gameinfo/steam_game_id={game_id}/" and modify the storage_key of getITADGameInfo to store the parquet file as "{prefix}{fetch_date}.parquet"
         #That way, if data gets enriched, we can have a record of how it has been enriched through time, in case that was ever a consideration of the scope.
-        prefix = f"raw/ITAD/gameinfo/steam_game_id={game_id}"
+        prefix = f"raw/ITAD/gameinfo/steam_game_id={game_id}.parquet"
         
-        response = s3_client.list_objects_v2(
-            Bucket=bucket_name,
-            Prefix=prefix
-        )
-
-        if response.get("KeyCount", 0) > 0:
-            # File exists, retrieve it and extract release date
-            key = response["Contents"][0]["Key"]
-            obj = s3_client.get_object(Bucket=bucket_name, Key=key)
-            data = json.loads(obj["Body"].read())
-            games_info[str(game_id)] = (data["itad_id"],data["releaseDate"])
-        else:
-            # No file found, game is new
+        try:
+            obj = s3_client.get_object(Bucket=bucket_name, Key=prefix)
+            buffer = io.BytesIO(obj["Body"].read())
+            df = pd.read_parquet(buffer)
+            row = df.iloc[0]
+            games_info[str(game_id)] = (row["itad_id"], row["releaseDate"])
+        except s3_client.exceptions.NoSuchKey:
             new_games.append(game_id)
 
     return games_info, new_games
