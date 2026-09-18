@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: dim_games
+    columns:
+      - name: steam_app_id
+        tests:
+          - unique
+          - not_null
+  - name: fact_price_history
+    columns:
+      - name: steam_app_id
+        tests:
+          - not_null
+      - name: price_date
+        tests:
+          - not_null
+  - name: fact_player_counts
+    columns:
+      - name: steam_app_id
+        tests:
+          - not_null
+      - name: recorded_date
+        tests:
+          - not_null
+  - name: fact_announcements
+    columns:
+      - name: steam_app_id
+        tests:
+          - not_null
+      - name: gid
+        tests:
+          - unique
+          - not_null
+      - name: published_date
+        tests:
+          - not_null
+  - name: fact_daily_metrics
+    columns:
+      - name: steam_app_id
+        tests:
+          - not_null
+      - name: review_date
+        tests:
+          - not_null

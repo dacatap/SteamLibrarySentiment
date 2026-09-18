@@ -10,6 +10,12 @@ unnested as (
     from source
 ),
 
+deduped as (
+    select *,
+        row_number() over (partition by item.gid order by item.date desc) as rn
+    from unnested
+),
+
 final as (
     select
         steam_app_id,
@@ -18,7 +24,8 @@ final as (
         epoch_ms(item.date::bigint * 1000)::date            as published_date,
         item.url::varchar                                   as url,
         item.contents::varchar                              as contents_preview
-    from unnested
+    from deduped
+    where rn = 1
 )
 
 select * from final

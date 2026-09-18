@@ -37,9 +37,11 @@ def getGamesInfoBucket(steam_game_id_list: list, s3_client, bucket_name: str) ->
 
 def extractAndLoadData(steam_api_key, steam_id, call_delay, itad_api_key, itad_rate_limit, aws_access_key_id, aws_secret_access_key,  region_name, bucket_name):
     #Extraction of Steam Library of personal account
-    #gamelist = getSteamLibrary(steam_api_key, steam_id)
+    gamelist = getSteamLibrary(steam_api_key, steam_id)
 
-    gamelist = [2054970, 1245620, 1850570]
+    #Test sample
+    #gamelist = [2054970, 1245620, 1850570]
+
     #Open S3 session
     s3_client = boto3.client(
         "s3",
