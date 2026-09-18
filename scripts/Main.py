@@ -95,4 +95,5 @@ def main():
     bucket_name = os.getenv("AWS_S3_BUCKET_NAME")
     extractAndLoadData(steam_api_key, steam_id, call_delay, itad_api_key, itad_rate_limit, aws_access_key_id, aws_secret_access_key,  region_name, bucket_name)
 
-main()
+def lambda_handler(event,context):
+    main()
