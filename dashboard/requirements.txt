@@ -1,0 +1,5 @@
+streamlit
+plotly
+duckdb
+boto3
+python-dotenv
