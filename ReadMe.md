@@ -23,7 +23,7 @@ flowchart LR
 ```
 
 ### Research Goal
-The pipeline investigates how external "incidents"—such as official developer updates or steep price discounts—impact player engagement and review distributions. 
+The pipeline investigates how external events, such as official developer updates or steep price discounts, impact player engagement and review distributions. 
 
 > **Case Study:** Prompted by the announcement of *Dragon's Dogma 2's* expansion on June 9, 2026, which produced a visible surge in player counts and positive sentiment, this pipeline automates the cross-checking of similar events across an entire Steam game library.
 
@@ -166,10 +166,28 @@ bash
 ```bash
 dbt test
 ```
----
+
+#### Orchestration Architecture
+
+The pipeline is split across two scheduling systems, each handling a distinct phase:
+
+|Phase|Tool|Schedule|Notes|
+|---|---|---|---|
+|**Extract & Load**|AWS Lambda + EventBridge|Saturdays, 02:00 UTC|Serverless, triggered by cron rule|
+|**Transform**|GitHub Actions|Saturdays, 03:30 UTC|90-min buffer after EL completes|
+
+##### Design Decision: Why Not a Single AWS-Native Solution?
+
+An early attempt was made to containerize the dbt transformation layer inside a Docker image deployed as a second AWS Lambda function, keeping the full pipeline within the AWS ecosystem. This approach was abandoned due to:
+
+- Lambda's read-only filesystem conflicting with dbt's requirement to write intermediate artifacts (`target/`, `dbt_packages/`)
+- Unreliable execution of `dbt-core` in Lambda environments, both via subprocess calls and the programmatic Python API
+- Significant packaging complexity for a tool designed as a CLI application
+
+**GitHub Actions** was selected as the transformation orchestrator instead. It provides a full Linux environment with a writable filesystem, runs `dbt` as a standard CLI command, and copies the resulting `prod.duckdb` to S3 via the AWS CLI. This approach trades full AWS-native architecture for operational simplicity and reliability, which is the correct tradeoff at this scale.
 
 ## 6. Known Issues & Roadmap
 
-- [ ] **Automated orchestration** — EL and transformation phases currently run manually. Planned: two chained AWS Lambda functions triggered weekly via EventBridge, replacing the local execution steps above.
+- [x] **Automated orchestration** — EL and transformation phases currently run manually. Planned: two chained AWS Lambda functions triggered weekly via EventBridge, replacing the local execution steps above.
 - [ ] **Full library scale** — pipeline validated against a 3-game sample. Scaling to full Steam library (~180 titles) pending orchestration completion.
-- [ ] **Evidence.dev dashboard** — transformation layer complete, dashboard build in progress.
+- [x] **Streamlit dashboard** — transformation layer complete, dashboard build in progress.
