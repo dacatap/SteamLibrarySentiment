@@ -1,0 +1,26 @@
+transform:
+  outputs:
+    dev:
+      type: duckdb
+      path: dev.duckdb
+      threads: 1
+      extensions:
+        - httpfs
+      settings:
+        s3_region: "{{ env_var('AWS_REGION_NAME') }}"
+        s3_access_key_id: "{{ env_var('AWS_ACCESS_KEY_ID') }}"
+        s3_secret_access_key: "{{ env_var('AWS_SECRET_ACCESS_KEY') }}"
+
+    prod:
+      type: duckdb
+      path: /tmp/prod.duckdb
+      threads: 4
+      extensions:
+        - httpfs
+      settings:
+        s3_region: "{{ env_var('AWS_REGION_NAME') }}"
+        s3_access_key_id: "{{ env_var('AWS_ACCESS_KEY_ID') }}"
+        s3_secret_access_key: "{{ env_var('AWS_SECRET_ACCESS_KEY') }}"
+      s3_database_copy_path: "s3://{{ env_var('AWS_S3_BUCKET_NAME') }}/analytics/prod.duckdb"
+
+  target: dev
