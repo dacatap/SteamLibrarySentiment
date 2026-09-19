@@ -1,5 +1,7 @@
 # Steam Library Player Sentiment Pipeline
 
+>**Dashboard Link: https://steamlibrarysentiment-dashboard.streamlit.app/
+
 An ELT data pipeline designed to analyze consumer sentiment (review spikes and active player counts) in response to game events (patch releases, major announcements, and historical sales).
 
 ---
@@ -189,5 +191,15 @@ An early attempt was made to containerize the dbt transformation layer inside a 
 ## 6. Known Issues & Roadmap
 
 - [x] **Automated orchestration** — EL and transformation phases currently run manually. Planned: two chained AWS Lambda functions triggered weekly via EventBridge, replacing the local execution steps above.
-- [ ] **Full library scale** — pipeline validated against a 3-game sample. Scaling to full Steam library (~180 titles) pending orchestration completion.
+- [x] **Full library scale** — pipeline validated against a 3-game sample. Scaling to full Steam library (~180 titles) pending orchestration completion.
 - [x] **Streamlit dashboard** — transformation layer complete, dashboard build in progress.
+
+- Free-to-play games are excluded from price history tracking. ITAD does not maintain deal history for games with no purchase price. These games still appear in the pipeline's game list but are silently skipped during ITAD enrichment.
+- Most delisted games, playtests, and technical test builds are filtered at library ingestion to prevent API errors on unavailable store pages.
+- SteamCharts does not track all games. Titles with very low player counts or older releases may have no data, and are skipped gracefully.
+
+**Scaling & Debugging Notes:**
+
+- Initial full-library seeding (~187 games) runs close to Lambda's 15-minute execution limit. Weekly steady-state runs are significantly faster as ITAD enrichment only triggers for new purchases.
+- Steam's undocumented rate limits on storefront endpoints require conservative request pacing; aggressive polling triggers connection resets and temporary IP blocks.
+- Empty API responses (price history or player counts returning `[]`) must be guarded against at extract time to prevent malformed Parquet files that break downstream dbt models.

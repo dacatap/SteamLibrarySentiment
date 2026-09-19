@@ -1,4 +1,4 @@
-V.1
+V.1 Initial draft
 ```mermaid
 erDiagram
   dim_games {
@@ -56,7 +56,7 @@ erDiagram
   dim_dates ||--o{ fact_announcements : covers
 ```
 
-V.2
+V.2 Current Model Used
 ```mermaid
 erDiagram
   dim_games {

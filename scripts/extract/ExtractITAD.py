@@ -65,6 +65,8 @@ def getITADGameHistory(steam_app_id: str, game_ITAD_id: str, release_date: str, 
     response.raise_for_status()
 
     raw = response.json()
+    if not raw:
+        return None, None
     raw_payload = [
         {
             "timestamp": entry["timestamp"],

@@ -54,30 +54,46 @@ def extractAndLoadData(steam_api_key, steam_id, call_delay, itad_api_key, itad_r
     if new_games:
         itad_map = postITADGamesGetInfo(new_games, itad_api_key)
         for i, (steam_game_id, itad_id) in enumerate(itad_map.items(), start=1):
+            if itad_id is None:
+                continue
             storage_key, raw_payload = getITADGameInfo(steam_game_id, itad_id, itad_api_key)
             games_info[steam_game_id] = (raw_payload["itad_id"], raw_payload["releaseDate"])
             uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
             if i % itad_rate_limit == 0:
                 time.sleep(300)
 
+
     #Extract Loop! Be wary of rate limits!!!
     #In practice, the call_delay will keep us under the reported steam rate limits, and well behind ITAD's API rate limits, still, monitor with attention!!!
-    for game_id in gamelist:
-        storage_key, raw_payload = getGameSteamReviewHistory(game_id)
-        uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
-        time.sleep(call_delay)
-        storage_key, raw_payload = getGameSteamNews(game_id, 100)
-        uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
-        time.sleep(call_delay)
-        storage_key, raw_payload = getSteamChartsHistory(game_id)
-        uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
+    for i, game_id in enumerate(gamelist, start= 1):
+        result = getGameSteamReviewHistory(game_id)
+        if result[0] is not None:
+            storage_key, raw_payload = result
+            uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
+        result = getGameSteamNews(game_id, 100)
+        if result[0] is not None:
+            storage_key, raw_payload = result
+            uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
+        result = getSteamChartsHistory(game_id)
+        try:
+            storage_key, raw_payload = result
+            uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
+        except Exception:
+            pass
 
         #ITAD price history
         itad_id, release_date = games_info[str(game_id)]
 
-        storage_key, raw_payload = getITADGameHistory(game_id, itad_id, release_date, itad_api_key)
-        uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
-        time.sleep(call_delay-call_delay/3)
+        result= getITADGameHistory(game_id, itad_id, release_date, itad_api_key)
+        try:
+            storage_key, raw_payload = result
+            uploadToS3(storage_key, raw_payload, s3_client, bucket_name)
+        except Exception:
+            pass
+        time.sleep(call_delay)
+
+        if i % 20 == 0:
+            time.sleep(15)
 
 
 ###Main execution
