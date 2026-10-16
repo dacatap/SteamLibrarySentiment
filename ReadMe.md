@@ -2,6 +2,8 @@
 
 >**Dashboard Link: https://steamlibrarysentiment-dashboard.streamlit.app/
 
+![Sample Dashboard Screenshot|691](./Doc/dashboardscreenshot.png)
+
 An ELT data pipeline designed to analyze consumer sentiment (review spikes and active player counts) in response to game events (patch releases, major announcements, and historical sales).
 
 ---
@@ -230,10 +232,7 @@ Both orchestration layers provide out-of-the-box failure notifications. EventBri
 - Free-to-play games are excluded from price history tracking. ITAD does not maintain deal history for games with no purchase price. These games still appear in the pipeline's game list but are silently skipped during ITAD enrichment.
 - Most delisted games, playtests, and technical test builds are filtered at library ingestion to prevent API errors on unavailable store pages.
 - SteamCharts does not track all games. Titles with very low player counts or older releases may have no data, and are skipped gracefully.
-
-![Sample Dashboard Screenshot|691](./Doc/dashboardscreenshot.png)
-
-- The dashboard chart uses a dual y-axis to display player counts (left) and review counts (right) on the same timeline. Due to the significant difference in scale between the two metrics, Plotly’s automatic axis scaling can cause review lines to appear below the zero baseline visually, even though all review values are positive. This is a rendering artifact of the dual-axis layout and does not reflect incorrect data. A future improvement would be separate charts per metric or normalized scaling.
+- ~~The dashboard chart uses a dual y-axis to display player counts (left) and review counts (right) on the same timeline. Due to the significant difference in scale between the two metrics, Plotly’s automatic axis scaling can cause review lines to appear below the zero baseline visually, even though all review values are positive. This is a rendering artifact of the dual-axis layout and does not reflect incorrect data. A future improvement would be separate charts per metric or normalized scaling.
 
 **Scaling & Debugging Notes:**
 
