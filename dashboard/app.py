@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide"
 )
 
-@st.cache_resource
+@st.cache_resource(ttl=6*3600)
 def load_db():
     s3 = boto3.client(
         "s3",
@@ -27,46 +27,65 @@ def load_db():
     tmp.close()
     return duckdb.connect(tmp.name, read_only=True)
 
-@st.cache_data
+@st.cache_data(ttl=6*3600)
 def get_games(_con):
-    return _con.execute("SELECT steam_app_id, title FROM dim_games ORDER BY title").df()
+    cur = _con.cursor()
+    try:
+        return cur.execute("SELECT steam_app_id, title FROM dim_games ORDER BY title").df()
+    finally:
+        cur.close()
 
-@st.cache_data
+@st.cache_data(ttl=6*3600)
 def get_reviews(_con, steam_app_id):
-    return _con.execute("""
-        SELECT review_date, recommendations_up, recommendations_down
-        FROM fact_daily_metrics
-        WHERE steam_app_id = ?
-        ORDER BY review_date
-    """, [steam_app_id]).df()
+    cur = _con.cursor()
+    try:
+        return cur.execute("""
+            SELECT review_date, recommendations_up, recommendations_down
+            FROM fact_daily_metrics
+            WHERE steam_app_id = ?
+            ORDER BY review_date
+        """, [steam_app_id]).df()
+    finally:
+        cur.close()
 
-@st.cache_data
+@st.cache_data(ttl=6*3600)
 def get_player_counts(_con, steam_app_id):
-    return _con.execute("""
-        SELECT recorded_date, avg_players
-        FROM fact_player_counts
-        WHERE steam_app_id = ?
-        ORDER BY recorded_date
-    """, [steam_app_id]).df()
+    cur = _con.cursor()
+    try:
+        return _con.execute("""
+            SELECT recorded_date, avg_players
+            FROM fact_player_counts
+            WHERE steam_app_id = ?
+            ORDER BY recorded_date
+        """, [steam_app_id]).df()
+    finally:
+        cur.close()
 
-@st.cache_data
+@st.cache_data(ttl=6*3600)
 def get_announcements(_con, steam_app_id):
-    return _con.execute("""
-        SELECT published_date, title, url
-        FROM fact_announcements
-        WHERE steam_app_id = ?
-        ORDER BY published_date
-    """, [steam_app_id]).df()
+    cur = _con.cursor()
+    try:
+        return _con.execute("""
+            SELECT published_date, title, url
+            FROM fact_announcements
+            WHERE steam_app_id = ?
+            ORDER BY published_date
+        """, [steam_app_id]).df()
+    finally:
+        cur.close()
 
-@st.cache_data
+@st.cache_data(ttl=6*3600)
 def get_price_events(_con, steam_app_id):
-    return _con.execute("""
-        SELECT price_date, discount_pct, price_amount, regular_price
-        FROM fact_price_history
-        WHERE steam_app_id = ? AND discount_pct > 0
-        ORDER BY price_date
-    """, [steam_app_id]).df()
-
+    cur = _con.cursor()
+    try:
+        return _con.execute("""
+            SELECT price_date, discount_pct, price_amount, regular_price
+            FROM fact_price_history
+            WHERE steam_app_id = ? AND discount_pct > 0
+            ORDER BY price_date
+        """, [steam_app_id]).df()
+    finally:
+        cur.close()
 # --- App ---
 st.title("🎮 Steam Library Player Sentiment")
 st.caption("Correlating player counts and review sentiment with game events across your Steam library.")
@@ -127,7 +146,8 @@ try:
             marker=dict(symbol="triangle-up", size=12, color="#FFC000"),
             customdata=announcements[["title", "url"]].values,
             hovertemplate="<b>📢 Announcement</b><br>%{customdata[0]}<extra></extra>",
-            yaxis="y1"
+            yaxis="y1",
+            cliponaxis=False
         ))
 
     # Sale/discount markers
@@ -140,14 +160,15 @@ try:
             marker=dict(symbol="diamond", size=12, color="#9B59B6"),
             customdata=price_events[["discount_pct", "price_amount"]].values,
             hovertemplate="<b>🏷️ Sale</b><br>%{customdata[0]}% off — $%{customdata[1]:.2f}<extra></extra>",
-            yaxis="y1"
+            yaxis="y1",
+            cliponaxis=False
         ))
 
     fig.update_layout(
         title=f"{selected_title} — Player Sentiment Over Time",
         xaxis=dict(title="Date"),
-        yaxis=dict(title="Avg Players", side="left"),
-        yaxis2=dict(title="Review Count", side="right", overlaying="y"),
+        yaxis=dict(title="Avg Players", side="left", rangemode="tozero"),
+        yaxis2=dict(title="Review Count", side="right", overlaying="y", rangemode="tozero", showgrid=False),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         hovermode="x unified",
         height=550,
